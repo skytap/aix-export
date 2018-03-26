@@ -31,52 +31,49 @@
 ########################################################################
 
 set -A INPUT "$@"
-## uncomment following block to print out inputs
-# for arg;do
-#    print $arg
-# done
+
+## Will set the imported VM name to be the same as the hostname
+LPAR_NAME=$(hostname)
 
 ## Test for disks in ODM
 echo ""
-echo "Disks:"
+echo "Locating Disks:"
 for arg;do
    DISK=`lscfg -l $arg`
    if [ $? -ne 0 ]; then
-      echo “FAILED: unable to detect device $arg”
-      exit 1
+      >&2 echo "FAILED: unable to detect device $arg, exiting script"
+      exit 1 #exit script due to failure state, unable to find disk
    fi
    DISK_ALLOCATION=$(getconf DISK_SIZE /dev/$arg)
    echo "Found device $arg, $DISK_ALLOCATION MB"
 done
 
-## Check to proceed
+## Prompt for user response of disk size before proceeding
 echo ""
 echo "Disk images will be created uncompressed in local directory."
-echo "Create these image(s)? (Yes/No)"
+echo "Create these image(s) in your local directory? (Yes/No)"
 read  answer
 case $answer in
    yes|Yes|y)
-#      echo "responded yes"
-      ;;
+	   ;;
    no|n|No)
-#      echo "responded no"
-      exit 2 #non-error early exit
+      exit 2 #exiting due to use response, no errors
       ;;
 esac
 
 ## Create disk images
 echo ""
 for arg;do
-   echo "Creating disk $arg.img"
-   dd if=/dev/$arg of=$arg.img 2> /dev/null
+   echo "Creating disk $LPAR_NAME-$arg.img"
+   dd if=/dev/$arg of=$LPAR_NAME-$arg.img bs=64K conv=noerror,sync
 done
 echo 'Disks images created'
 
 ## Run make_ovf.ksh script
-./make_ovf.ksh "$@"
+( ${0%/*}/make_ovf.ksh "$@" )
 if [ $? -ne 0 ]; then
-   echo “FAILED: creation of ovf file”
-   exit 1
+   >&2 echo “FAILED: error with ovf creation, exiting script”
+   exit 1 #exit script due to failure state, received failure from make_ovf script
 fi
 
-exit 0
+exit 0 #successful exit

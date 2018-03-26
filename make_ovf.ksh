@@ -26,34 +26,26 @@
 ########################################################################
 
 set -A INPUT "$@"
-## uncomment following block to print out inputs
-# for arg;do
-#    print $arg
-# done
 
 ## Will set the imported VM name to be the same as the hostname
 LPAR_NAME=$(hostname)
-# echo $LPAR_NAME
 
 ## Find number of virtual processors
 VIRTUAL_PROCESSORS=$(prtconf | awk '/Number Of Processors/{print $4}')
-# echo $VIRTUAL_PROCESSORS
 
 ## Find amount of allocated ram
 RAM_ALLOCATION=$(lparstat -i | awk '/Online Memory/{print $4}')
-# echo $RAM_ALLOCATION
 
 ## Find all in-use ethernet adapters
 ETHERNET_ADAPTERS=$(netstat -i | awk '/en/{print $1}' | awk '!x[$0]++')
-# echo $ETHERNET_ADAPTERS
 
 ## Discover disks from input
 for arg;do
    typeset -i DISK_ALLOCATION
    DISK_ALLOCATION=$(getconf DISK_SIZE /dev/$arg)
    if [ $? -ne 0 ]; then
-      echo “FAILED: unable to detect device /dev/$arg”
-      exit 1
+      >&2 echo “FAILED: unable to detect device /dev/$arg, exiting script”
+      exit 1 #exit script due to failure state, unable to find disk
    fi
 done
 
@@ -69,7 +61,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' >> $LPAR_NAME'.ovf'
 echo '<ovf:Envelope xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd">' >> $LPAR_NAME'.ovf'
 echo '    <ovf:References>' >> $LPAR_NAME'.ovf'
 for arg;do
-   echo '        <ovf:File ovf:id="file_'$arg'" ovf:href="'$arg'.img"/>' >> $LPAR_NAME'.ovf'
+   echo '        <ovf:File ovf:id="file_'$arg'" ovf:href="'$LPAR_NAME-$arg'.img"/>' >> $LPAR_NAME'.ovf'
 done
 echo '    </ovf:References>' >> $LPAR_NAME'.ovf'
 echo '    <ovf:DiskSection>' >> $LPAR_NAME'.ovf'
@@ -136,4 +128,4 @@ echo '    </ovf:VirtualSystemCollection>' >> $LPAR_NAME'.ovf'
 echo '</ovf:Envelope>' >> $LPAR_NAME'.ovf'
 
 echo 'OVF Completed Successfully'
-exit 0
+exit 0 #successful exit
