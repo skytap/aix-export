@@ -58,7 +58,7 @@ echo ""
 echo 'Creating OVF file: '$LPAR_NAME'.ovf'
 > $LPAR_NAME'.ovf'
 echo '<?xml version="1.0" encoding="UTF-8"?>' >> $LPAR_NAME'.ovf'
-echo '<ovf:Envelope xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd">' >> $LPAR_NAME'.ovf'
+echo '<ovf:Envelope xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:skytap:"http://help.skytap.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_VirtualSystemSettingData.xsd http://schemas.dmtf.org/ovf/envelope/1 http://schemas.dmtf.org/ovf/envelope/1/dsp8023_1.1.0.xsd http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2.22.0/CIM_ResourceAllocationSettingData.xsd">' >> $LPAR_NAME'.ovf'
 echo '    <ovf:References>' >> $LPAR_NAME'.ovf'
 for arg;do
    echo '        <ovf:File ovf:id="file_'$arg'" ovf:href="'$LPAR_NAME-$arg'.img"/>' >> $LPAR_NAME'.ovf'
@@ -93,12 +93,20 @@ for e in $ETHERNET_ADAPTERS;do
 done
 typeset -i COUNT=1
 for arg;do
+   SLOT=$(lsdev -l $arg -F "physloc" | awk '{split($0,a,"-"); print a[3]}' | cut -c2)
+   LUN=$(lsdev -l $arg -F "physloc" | awk '{split($0,a,"-"); print a[5]}' | sed 's/^L//' | sed 's/0*$//' | bc)
    echo '                <ovf:Item>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:Description>Hard disk</rasd:Description>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:ElementName>Hard disk '$COUNT'</rasd:ElementName>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:HostResource>ovf:/disk/disk_'$arg'</rasd:HostResource>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:InstanceID>100'$COUNT'</rasd:InstanceID>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:ResourceType>17</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
+   if [ -n "$SLOT" ]; then
+      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="diskInfo.cardSlot"/>' >> $LPAR_NAME'.ovf'
+   fi
+   if [ -n "$LUN" ]; then
+      echo '                    <skytap:Config skytap:value="'$LUN'" skytap:key="diskInfo.logicalPath"/>' >> $LPAR_NAME'.ovf'
+   fi
    echo '                </ovf:Item>' >> $LPAR_NAME'.ovf'
    ((COUNT=COUNT+1))
 done
