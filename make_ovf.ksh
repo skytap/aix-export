@@ -83,11 +83,23 @@ echo '            </ovf:OperatingSystemSection>' >> $LPAR_NAME'.ovf'
 echo '            <ovf:VirtualHardwareSection>' >> $LPAR_NAME'.ovf' >> $LPAR_NAME'.ovf'
 typeset -i COUNT=1
 for e in $ETHERNET_ADAPTERS;do
+   SLOT=$(lsdev -l $(echo $e | sed 's/en/ent/') -F "physloc"| awk '{split($0,a,"-"); print a[3]}' | cut -c2)
+   NETADDR=$(lsattr -E -l $e -a netaddr | awk '{print $2}')
+   NETMASK=$(lsattr -E -l $e -a netmask | awk '{print $2}')
    echo '                <ovf:Item>' >> $LPAR_NAME'.ovf'
-   echo '                   <rasd:Description>Ethernet adapter '$COUNT'</rasd:Description>' >> $LPAR_NAME'.ovf'
-   echo '                   <rasd:ElementName>Network adapter '$COUNT'</rasd:ElementName>' >> $LPAR_NAME'.ovf'
-   echo '                   <rasd:InstanceID>10'$COUNT'</rasd:InstanceID>' >> $LPAR_NAME'.ovf'
-   echo '                   <rasd:ResourceType>10</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
+   echo '                    <rasd:Description>Ethernet adapter '$COUNT'</rasd:Description>' >> $LPAR_NAME'.ovf'
+   echo '                    <rasd:ElementName>Network adapter '$COUNT'</rasd:ElementName>' >> $LPAR_NAME'.ovf'
+   echo '                    <rasd:InstanceID>10'$COUNT'</rasd:InstanceID>' >> $LPAR_NAME'.ovf'
+   echo '                    <rasd:ResourceType>10</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
+   if [ -n "$SLOT" ]; then
+      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="networkAdapter.cardSlot"/>' >> $LPAR_NAME'.ovf'
+   fi
+   if [ -n "$NETADDR" ]; then
+      echo '                    <skytap:Config skytap:value="'$NETADDR'" skytap:key="networkInterface.ipAddress"/>' >> $LPAR_NAME'.ovf'
+   fi
+   if [ -n "$NETMASK" ]; then
+      echo '                    <skytap:Config skytap:value="'$NETMASK'" skytap:key="networkInterface.ipAddress"/>' >> $LPAR_NAME'.ovf'
+   fi
    echo '                </ovf:Item>' >> $LPAR_NAME'.ovf'
    ((COUNT=COUNT+1))
 done
