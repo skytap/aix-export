@@ -38,7 +38,7 @@ export\_lpar will automatically run make\_ovf when it is complete. make\_ovf can
 - Workloads on disks you want to create images of should be quiesced. Optional to further varyoffvg the physical volumes.
 - Within the directory you want your images to be created, run export\_lpar.ksh with physical volume names as arguments, starting with your rootvg. (THIS WILL TAKE A LONG TIME)
 - When export\_lpar.ksh is complete, it will automatically call make\_ovf.ksh with the same physical volume specified when running export_lpar.ksh.
-- (optional) At this point the OVF and accompanying IMG files can be can be bundled in a tar file (do not zip), the bundle should be appended with OVA.
+- (optional) At this point the OVF and accompanying IMG files can be can be bundled in a tar file and compressed, the bundle should be appended with OVA.
 - The LPAR files (OVF+IMG or OVA) can be uploaded and imported directly into Skytap via SFTP, or shipped to Skytap's office and we can assist with import efforts.
 
 ```
@@ -50,8 +50,8 @@ what you need to do:
 # alt_disk_copy -d hdisk1 -B
 2. run export_lpar with the disks as arguments. output will be disk images and hostname.ovf Example:
 # ./export_lpar.ksh hdisk1 hdisk2 hdisk3
-3. (optional) you can bundle the files together with tar and name the bundle with .ova (but you can not flag zip in the tar)
-# tar -cvf powervm.ova hostname.ovf hdisk1.img hdisk2.img hdisk3.img
+3. (optional) you can bundle the files together with tar to bundle the files and compress empty disk sections.
+# tar -czvf powervm.ova hostname.ovf hdisk1.img hdisk2.img hdisk3.img
 4. upload and import to Skytap import site, flagging the job for Power VM. Account must be Power enabled.
 ```
 
