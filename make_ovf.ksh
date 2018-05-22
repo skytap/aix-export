@@ -83,7 +83,7 @@ echo '            </ovf:OperatingSystemSection>' >> $LPAR_NAME'.ovf'
 echo '            <ovf:VirtualHardwareSection>' >> $LPAR_NAME'.ovf' >> $LPAR_NAME'.ovf'
 typeset -i COUNT=1
 for e in $ETHERNET_ADAPTERS;do
-   SLOT=$(lsdev -l $(echo $e | sed 's/en/ent/') -F "physloc"| awk '{split($0,a,"-"); print a[3]}' | cut -c2)
+   SLOT=$(lsdev -l $(echo $e | sed 's/en/ent/') -F "physloc"| sed -n 's/.*-C\([^-]*\)-.*/\1/p')
    NETADDR=$(lsattr -E -l $e -a netaddr | awk '{print $2}')
    NETMASK=$(lsattr -E -l $e -a netmask | awk '{print $2}')
    echo '                <ovf:Item>' >> $LPAR_NAME'.ovf'
@@ -105,8 +105,7 @@ for e in $ETHERNET_ADAPTERS;do
 done
 typeset -i COUNT=1
 for arg;do
-   SLOT=$(lsdev -l $arg -F "physloc" | awk '{split($0,a,"-"); print a[3]}' | cut -c2)
-   LUN=$(lsdev -l $arg -F "physloc" | awk '{split($0,a,"-"); print a[5]}' | sed 's/^L//' | sed 's/0*$//' | bc)
+   SLOT=$(lsdev -l $arg -F "physloc" | sed -n 's/.*-C\([^-]*\)-.*/\1/p')
    echo '                <ovf:Item>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:Description>Hard disk</rasd:Description>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:ElementName>Hard disk '$COUNT'</rasd:ElementName>' >> $LPAR_NAME'.ovf'
@@ -115,9 +114,6 @@ for arg;do
    echo '                    <rasd:ResourceType>17</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
    if [ -n "$SLOT" ]; then
       echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="diskInfo.cardSlot"/>' >> $LPAR_NAME'.ovf'
-   fi
-   if [ -n "$LUN" ]; then
-      echo '                    <skytap:Config skytap:value="'$LUN'" skytap:key="diskInfo.logicalPath"/>' >> $LPAR_NAME'.ovf'
    fi
    echo '                </ovf:Item>' >> $LPAR_NAME'.ovf'
    ((COUNT=COUNT+1))
