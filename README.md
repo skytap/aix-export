@@ -18,7 +18,7 @@ limitations under the License.
 - Both scripts need to be made available on the AIX lpar and should be in the same directory (export\_lpar runs make\_ovf).
 - Script output, including disk images and ovf file will be placed in the current working directory they are run from.
 - The scripts do not perform destructive tasks and will not clean up any files they generate (make\_ovf will overwrite the output ovf file with the same name).
-- Disk images include empty space (do not have a way to flatten the images out at this time).
+- Only the disk images specified when running export\_lpar will generate disk images and these images will include unused space on the disk (do not have a way to flatten the images out at this time).
 - Disk order is not guaranteed at import (yet). There is a risk that the rootvg (boot disk) will not be correctly flagged at time of import, needs further investigation.
 - Disks will consume a LOT of space. Expect the output disk images to be the full size of any physical volumes targeted for export.
 
@@ -49,9 +49,11 @@ what you need to do:
 1. create or update alt_disk_copy to get rootvg that is not in use. Example:
 # alt_disk_copy -d hdisk1 -B
 2. run export_lpar with the disks as arguments. output will be disk images and hostname.ovf Example:
-# ./export_lpar.ksh hdisk1 hdisk2 hdisk3
-3. (optional) you can bundle the files together with tar to bundle the files and compress empty disk sections.
-# tar -czvf powervm.ova hostname.ovf hdisk1.img hdisk2.img hdisk3.img
+# ./export_lpar.ksh hdisk2 hdisk3
+3. (optional) you can bundle the files together with tar to bundle the files and compress empty disk sections. Note: the compression flag is not native to and compression can be performed with an alternate command.
+# tar -czvf powervm.ova hostname.ovf powervm-hdisk2.img powervm-hdisk3.img
+  OR
+# tar -cvf - powervm.ovf powervm-hdisk2.img powervm-hdisk3.img | gzip > powervm.ova
 4. upload and import to Skytap import site, flagging the job for Power VM. Account must be Power enabled.
 ```
 
