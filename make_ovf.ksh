@@ -44,7 +44,7 @@ for arg;do
    typeset -i DISK_ALLOCATION
    DISK_ALLOCATION=$(getconf DISK_SIZE /dev/$arg)
    if [ $? -ne 0 ]; then
-      >&2 echo “FAILED: unable to detect device /dev/$arg, exiting script”
+      >&2 echo "FAILED: unable to detect device /dev/$arg, exiting script"
       exit 1 #exit script due to failure state, unable to find disk
    fi
 done
