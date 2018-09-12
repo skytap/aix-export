@@ -92,7 +92,7 @@ for e in $ETHERNET_ADAPTERS;do
    echo '                    <rasd:InstanceID>10'$COUNT'</rasd:InstanceID>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:ResourceType>10</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
    if [ -n "$SLOT" ]; then
-      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="networkAdapter.cardSlot"/>' >> $LPAR_NAME'.ovf'
+      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="slotInfo.cardSlotNumber"/>' >> $LPAR_NAME'.ovf'
    fi
    if [ -n "$NETADDR" ]; then
       echo '                    <skytap:Config skytap:value="'$NETADDR'" skytap:key="networkInterface.ipAddress"/>' >> $LPAR_NAME'.ovf'
@@ -113,7 +113,7 @@ for arg;do
    echo '                    <rasd:InstanceID>100'$COUNT'</rasd:InstanceID>' >> $LPAR_NAME'.ovf'
    echo '                    <rasd:ResourceType>17</rasd:ResourceType>' >> $LPAR_NAME'.ovf'
    if [ -n "$SLOT" ]; then
-      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="diskInfo.cardSlot"/>' >> $LPAR_NAME'.ovf'
+      echo '                    <skytap:Config skytap:value="'$SLOT'" skytap:key="slotInfo.cardSlotNumber"/>' >> $LPAR_NAME'.ovf'
    fi
    echo '                </ovf:Item>' >> $LPAR_NAME'.ovf'
    ((COUNT=COUNT+1))
