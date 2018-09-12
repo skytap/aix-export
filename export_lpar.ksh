@@ -72,7 +72,7 @@ echo 'Disks images created'
 ## Run make_ovf.ksh script
 ( ${0%/*}/make_ovf.ksh "$@" )
 if [ $? -ne 0 ]; then
-   >&2 echo “FAILED: error with ovf creation, exiting script”
+   >&2 echo "FAILED: error with ovf creation, exiting script"
    exit 1 #exit script due to failure state, received failure from make_ovf script
 fi
 
