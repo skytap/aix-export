@@ -49,11 +49,11 @@ what you need to do:
 1. create or update alt_disk_copy to get rootvg that is not in use. Example:
 # alt_disk_copy -d hdisk1 -B
 2. run export_lpar with the disks as arguments. output will be disk images and hostname.ovf Example:
-# ./export_lpar.ksh hdisk2 hdisk3
-3. (optional) you can bundle the files together with tar to bundle the files and compress empty disk sections. Note: the compression flag is not native to and compression can be performed with an alternate command.
-# tar -czvf powervm.ova hostname.ovf powervm-hdisk2.img powervm-hdisk3.img
+# ./export_lpar.ksh hdisk1 hdisk2 hdisk3
+3. (optional) you can bundle the files together with tar to bundle the files and compress empty disk sections. Note: if the compression flag is not native to your tar, compression can be performed with an alternate command.
+# tar -czvf powervm.ova hostname.ovf powervm-hdisk1.img powervm-hdisk2.img powervm-hdisk3.img
   OR
-# tar -cvf - powervm.ovf powervm-hdisk2.img powervm-hdisk3.img | gzip > powervm.ova
+# tar -cvf - powervm.ovf powervm-hdisk1.img powervm-hdisk2.img powervm-hdisk3.img | gzip > powervm.ova
 4. upload and import to Skytap import site, flagging the job for Power VM. Account must be Power enabled.
 ```
 
