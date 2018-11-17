@@ -27,7 +27,7 @@
 
 
 ########################################################################
-## FIND AND DECLAIR VARIABLES
+## FIND AND DECLARE VARIABLES
 ########################################################################
 
 set -A INPUT "$@"
@@ -57,7 +57,7 @@ case $answer in
    yes|Yes|y)
 	   ;;
    no|n|No)
-      exit 2 #exiting due to use response, no errors
+      exit 2 #exiting due to user response, no errors
       ;;
 esac
 
