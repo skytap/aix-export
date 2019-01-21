@@ -58,7 +58,7 @@ what you need to do:
 ```
 
 ## export_lpar.ksh
-export\_lpap expects to be passed a string of physical volume names (eg, hdisk0, hdisk1...). It will then validate it has access to those disks and use dd to create IMG files for each disk. The IMG files will be created in your present working directory. The first physical volume specified needs to be rootvg, it is strongly recommended that the underlying physical volume for rootvg be an up-to-date copy created from alt\_disk\_copy. When the image files are created, it will then automatically run make\_ovf with the same physical valume arguments.
+export\_lpar expects to be passed a string of physical volume names (eg, hdisk0, hdisk1...). It will then validate it has access to those disks and use dd to create IMG files for each disk. The IMG files will be created in your present working directory. The first physical volume specified needs to be rootvg, it is strongly recommended that the underlying physical volume for rootvg be an up-to-date copy created from alt\_disk\_copy. When the image files are created, it will then automatically run make\_ovf with the same physical volume arguments.
 
 ## make_ovf.ksh
 make\_ovf expects to be passed a string of physical volumes (eg, hdisk0, hdisk1) that should be included within the OVF file. It will detect the number of virtual processors (not physical), RAM allocation, active ethernet adapters, and it will name the exported lpar and OVF file after the lpar hostname. Disks passed into the script are evaluated to exist and then also included in the output OVF. Other lpar details are not captured in the OVF. This script will be automatically called when export_lpar is complete, it can also be run as a stand-alone script to only generate an OVF file.
