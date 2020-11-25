@@ -1,6 +1,7 @@
 #!/bin/ksh
 
-## v2.5
+## v2.5.5
+## Images raw disk devices - /dev/rhdisk#
 ########################################################################
 ## Copyright 2018 Skytap Inc.
 ## 
@@ -86,7 +87,7 @@ done
 ## Prompt for user response of disk size before proceeding
 echo ""
 echo "Disk images will be created in directory: $(pwd | cat)" 
-echo "Create image(s) in this directory? (Yes/No/Change)"
+echo "Create image(s) in this directory? (Y)es/(N)o/(C)hange"
 read  answer
 case $answer in
    yes|Yes|y|Y)
@@ -96,7 +97,7 @@ case $answer in
       echo "exiting on No"
       exit 2 #exiting due to user response, no errors
            ;;
-   Chango|c|C|change)
+   Change|c|C|change)
       echo "Enter the path to your destination directory."
       read answer
       WRKDIR=$answer
@@ -117,7 +118,6 @@ if [ $TOTDR -gt $FSSZ ]; then
    exit 1 #exit due to insufficient space
 fi
 
-
 ## Create disk images
 echo " "
 echo 'Creating disk image(s)'
@@ -127,9 +127,10 @@ export WRKDIR=$WRKDIR
 echo ""
 for arg;do
    echo "Creating disk $LPAR_NAME-$arg.img"
-   dd if=/dev/$arg of=$WRKDIR/$LPAR_NAME-$arg.img bs=1M conv=noerror,sync #bs=1M instead of bs=64 to improve imaging speed 
+   dd if=/dev/r$arg of=$WRKDIR/$LPAR_NAME-$arg.img bs=1M conv=noerror,sync #bs=1M instead of bs=64 to improve imaging speed
 done
 echo 'Disks images created'
+date
 
 ## Run make_ovf.ksh script
 ( ${0%/*}/make_ovf.ksh "$@" )
@@ -138,20 +139,50 @@ if [ $? -ne 0 ]; then
    exit 1 #exit script due to failure state, received failure from make_ovf script
 fi
 
+echo ""
+
 ## Create tar and compress
-MKTAR=$WRKDIR/$LPAR_NAME'.ovf'
+echo 'Creating tar file: ' $WRKDIR/$LPAR_NAME
+MKTAR=$LPAR_NAME'.ovf'
 for arg;do
-   MKTAR=$(echo $MKTAR $WRKDIR/$LPAR_NAME-$arg'.img')
+    MKTAR=$(echo $MKTAR $LPAR_NAME-$arg'.img')
 done
 
-tar -cvf - $MKTAR | $(pwd | cat)/pigz > $WRKDIR/$LPAR_NAME.ova
+PZ=$(pwd | cat)
 
+cd $WRKDIR
+tar -cvf $WRKDIR/$LPAR_NAME $MKTAR
 
-## Remove .img and .ovf files after .ova creation
-for arg;do
-   rm $WRKDIR/$LPAR_NAME-$arg.img
-done
-rm $WRKDIR/$LPAR_NAME.ovf
+## Validate tar file, compress, and clean up
+echo ""
+echo 'Validating tar file: ' $WRKDIR/$LPAR_NAME
+tar -tvf $WRKDIR/$LPAR_NAME
+echo 'tar exit status: ' $?
+if [ $? -ne 0 ]; then
+    echo "Tar validation failed."
+    echo "Try manually taring the files again or"
+    echo "upload the indiviual .img and .ovf files."
+    exit 1
+else
+    ## Remove .img and .ovf files after .ova creation
+    echo ""
+    echo 'Cleaning up LPAR imaging files'
+    for arg; do
+        ##rm $WRKDIR/*.img
+        echo 'Deleting file: ' $WRKDIR/$LPAR_NAME-$arg.img
+        rm $WRKDIR/$LPAR_NAME-$arg.img
+    done
+    echo 'Deleting file: ' $WRKDIR/$LPAR_NAME.ovf
+    rm $WRKDIR/$LPAR_NAME.ovf
 
+    echo ""
+    echo 'Compressing Files'
+    echo 'Compressing file: ' $WRKDIR/$LPAR_NAME.ova
+    cd $PZ
+    ./pigz $WRKDIR/$LPAR_NAME 
+    mv $WRKDIR/$LPAR_NAME.gz $WRKDIR/$LPAR_NAME.ova
+fi
 
+echo ""
+echo '***LPAR imaging complete***'
 exit 0 #successful exit

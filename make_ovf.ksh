@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-## v2.5
+## v2.5.1
 ########################################################################
 ## Copyright 2018 Skytap Inc.
 ## 
@@ -69,7 +69,7 @@ done
 echo '    </ovf:References>' >> $WRKDIR/$LPAR_NAME'.ovf'
 echo '    <ovf:DiskSection>' >> $WRKDIR/$LPAR_NAME'.ovf'
 echo '        <ovf:Info>Virtual disk information</ovf:Info>' >> $WRKDIR/$LPAR_NAME'.ovf'
-for HDSK2;do
+for arg;do
    typeset -i DISK_ALLOCATION
    DISK_ALLOCATION=$(getconf DISK_SIZE /dev/$arg)*1024*1024
    echo '        <ovf:Disk ovf:fileRef="file_'$arg'" ovf:diskId="disk_'$arg'" ovf:capacity="'$DISK_ALLOCATION'"/>' >> $WRKDIR/$LPAR_NAME'.ovf'
